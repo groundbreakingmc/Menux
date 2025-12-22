@@ -1,0 +1,21 @@
+package com.github.groundbreakingmc.menux.reqirement.condition.impl.logic;
+
+import com.github.groundbreakingmc.menux.menu.context.MenuContext;
+import com.github.groundbreakingmc.menux.reqirement.condition.MenuCondition;
+import org.jetbrains.annotations.NotNull;
+
+public final class AndCondition implements MenuCondition {
+
+    private final MenuCondition left;
+    private final MenuCondition right;
+
+    public AndCondition(MenuCondition left, MenuCondition right) {
+        this.left = left;
+        this.right = right;
+    }
+
+    @Override
+    public boolean test(@NotNull MenuContext context) {
+        return this.left.test(context) && this.right.test(context);
+    }
+}

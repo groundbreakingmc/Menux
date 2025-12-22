@@ -1,0 +1,15 @@
+name: "Menux"
+version: "1.0"
+
+main: "com.github.groundbreakingmc.menux.Menux"
+api-version: "1.21"
+
+author: "GroundbreakingMC"
+website: "https://github.com/groundbreakingmc"
+
+depend: [ "packetevents" ]
+softdepend: [ "PlaceholderAPI" ]
+
+# TODO: remove after testing
+commands:
+  menux: {}

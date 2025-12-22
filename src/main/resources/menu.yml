@@ -1,0 +1,42 @@
+title: "Menu Title"
+
+type: GENERIC_9x1
+
+open-command: [ "menu" ]
+
+#open-requirements:
+#  - expression: >
+#      hasPermission('server.admin')
+#      && %vault_eco_balance% >= 199
+#    # supported operations: + - * : ( ) % | < > <= >=
+#    deny-actions:
+#      - type: MESSAGE
+#        message: "<red>Access denied. Not enough money!"
+
+#open-actions: [ ]
+#close-actions: [ ]
+
+items:
+  buy_diamond:
+    material: DIAMOND
+#    amount: 1
+#    render-priority: 1
+    slot: 4
+    display-name: "<yellow>Click to buy this diamond"
+#    lore: [ ]
+#    view-requirements: "hasPermission('shop.see.diamond')"
+#    actions:
+#      - type: left_click
+#        requirements:
+#          - expression: "%vault_eco_balance% >= 1000"
+#            deny-actions:
+#              - type: MESSAGE
+#                message: "[MESSAGE] <red> Not enough money."
+#        execute:
+#          - type: COMMAND
+#            message: "give {player} diamond"
+#          - type: COMMAND
+#            message: "eco take {player} 1000"
+#          - type: MESSAGE
+#            message: "<yellow>You bought diamond x1 for 1000$"
+
