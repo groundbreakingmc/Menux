@@ -3,8 +3,8 @@ package com.github.groundbreakingmc.menux.utils;
 import com.github.groundbreakingmc.menux.action.ActionCreationContext;
 import com.github.groundbreakingmc.menux.action.MenuAction;
 import com.github.groundbreakingmc.menux.action.registry.MenuActionRegistry;
-import com.github.groundbreakingmc.menux.buttons.ButtonTemplate;
-import com.github.groundbreakingmc.menux.buttons.ClickParams;
+import com.github.groundbreakingmc.menux.button.ButtonTemplate;
+import com.github.groundbreakingmc.menux.button.ClickParams;
 import com.github.groundbreakingmc.menux.click.ClickType;
 import com.github.groundbreakingmc.menux.colorizer.Colorizer;
 import com.github.groundbreakingmc.menux.menu.MenuType;
@@ -12,9 +12,9 @@ import com.github.groundbreakingmc.menux.menu.builder.DefaultMenuBuilder;
 import com.github.groundbreakingmc.menux.menu.registry.MenuRegistry;
 import com.github.groundbreakingmc.menux.menu.template.MenuTemplate;
 import com.github.groundbreakingmc.menux.placeholder.PlaceholderParser;
-import com.github.groundbreakingmc.menux.reqirement.parser.MenuRuleParser;
-import com.github.groundbreakingmc.menux.reqirement.parser.MenuRuleParserOptions;
-import com.github.groundbreakingmc.menux.reqirement.rule.MenuRule;
+import com.github.groundbreakingmc.menux.reqirements.parser.MenuRuleParser;
+import com.github.groundbreakingmc.menux.reqirements.parser.MenuRuleParserOptions;
+import com.github.groundbreakingmc.menux.reqirements.rule.MenuRule;
 import com.github.retrooper.packetevents.protocol.item.type.ItemType;
 import com.github.retrooper.packetevents.protocol.item.type.ItemTypes;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -97,6 +97,7 @@ public final class ConfigurateMenuLoader {
         return ButtonTemplate.builder()
                 .material(parseMaterial(node.node("material")))
                 .amount(node.node("amount").getInt(1))
+                .damage(node.node("damage").getInt(0))
                 .renderPriority(node.node("render-priority").getInt(0))
                 .displayName(node.node("display-name").getString())
                 .lore(node.node("lore").getList(String.class))
@@ -146,7 +147,7 @@ public final class ConfigurateMenuLoader {
         return rules;
     }
 
-    private static ClickMap<ClickParams> parseClickActions(ConfigurationNode node, ActionCreationContext creationContext) {
+    private static Map<ClickType, ClickParams> parseClickActions(ConfigurationNode node, ActionCreationContext creationContext) {
         final Map<ClickType, ClickParams> map = new HashMap<>();
         for (final ConfigurationNode entry : node.childrenList()) {
             final String rawType = requireString(entry.node("type"), "Click action requires 'type'");
@@ -162,7 +163,7 @@ public final class ConfigurateMenuLoader {
                     parseActions(entry.node("execute"), creationContext)
             ));
         }
-        return new ClickMap<>(map);
+        return map;
     }
 
     private static List<MenuAction> parseActions(ConfigurationNode node, ActionCreationContext creationContext) {

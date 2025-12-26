@@ -1,6 +1,6 @@
 package com.github.groundbreakingmc.menux.menu.context;
 
-import com.github.groundbreakingmc.menux.buttons.ButtonTemplate;
+import com.github.groundbreakingmc.menux.button.ButtonTemplate;
 import com.github.groundbreakingmc.menux.click.ClickType;
 import com.github.groundbreakingmc.menux.menu.instance.MenuInstance;
 import com.github.groundbreakingmc.menux.menu.registry.MenuRegistry;

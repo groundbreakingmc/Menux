@@ -12,6 +12,12 @@ public interface MenuPlayer extends net.kyori.adventure.audience.Audience {
 
     boolean hasPermission(String permission);
 
+    /**
+     * actionbar slots: 0-8
+     * inventory slots: 9-35
+     * armor slots: 36-39
+     * offhand slots: 45
+     */
     ItemStack itemAt(int slot);
 
     boolean performCommand(@NotNull String command);

@@ -1,7 +1,7 @@
 package com.github.groundbreakingmc.menux;
 
-import com.github.groundbreakingmc.menux.listener.InventoryListener;
-import com.github.groundbreakingmc.menux.manager.PlayerMenuManager;
+import com.github.groundbreakingmc.menux.listeners.InventoryListener;
+import com.github.groundbreakingmc.menux.managers.PlayerMenuManager;
 import com.github.groundbreakingmc.menux.platform.PlatformType;
 import com.github.groundbreakingmc.menux.platform.player.factory.MenuPlayerFactory;
 import com.github.groundbreakingmc.menux.platform.player.factory.impl.BukkitMenuPlayerFactory;
@@ -60,7 +60,7 @@ public final class MenuxAPI {
     public static synchronized void terminate() {
         if (!initialized) return;
 
-        menuManager.clearAll();
+        menuManager.closeAll();
         PacketEvents.getAPI().getEventManager().unregisterListener(listener);
 
         platformType = null;

@@ -1,7 +1,7 @@
 package com.github.groundbreakingmc.menux.action;
 
 import com.github.groundbreakingmc.menux.action.registry.MenuActionRegistry;
-import com.github.groundbreakingmc.menux.reqirement.parser.MenuRuleParserOptions;
+import com.github.groundbreakingmc.menux.reqirements.parser.MenuRuleParserOptions;
 import org.jetbrains.annotations.NotNull;
 
 /**

@@ -6,7 +6,8 @@ import com.github.groundbreakingmc.menux.menu.instance.MenuInstance;
 import com.github.groundbreakingmc.menux.menu.registry.impl.DefaultMenuRegistry;
 import com.github.groundbreakingmc.menux.menu.template.MenuTemplate;
 import com.github.groundbreakingmc.menux.placeholder.impl.PAPIParser;
-import com.github.groundbreakingmc.menux.reqirement.parser.MenuRuleParserOptions;
+import com.github.groundbreakingmc.menux.platform.player.MenuPlayer;
+import com.github.groundbreakingmc.menux.reqirements.parser.MenuRuleParserOptions;
 import com.github.groundbreakingmc.menux.utils.ConfigurateMenuLoader;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -14,6 +15,7 @@ import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
 
 import java.util.Enumeration;
+import java.util.Objects;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -42,13 +44,11 @@ public final class Menux extends JavaPlugin {
             throw new RuntimeException(ex);
         }
 
-        super.getCommand("menux").setExecutor((s, c, l, a) -> {
-            final MenuInstance menuInst = menu.createMenu(MenuxAPI.playerFactory().create(s));
+        Objects.requireNonNull(super.getCommand("menux")).setExecutor((s, c, l, a) -> {
+            final Object target = a.length < 1 ? s : Bukkit.getPlayer(a[0]);
+            final MenuPlayer player = MenuxAPI.playerFactory().create(target);
+            final MenuInstance menuInst = menu.createMenu(player);
             menuInst.open();
-            Bukkit.getScheduler().runTaskLater(this, () -> {
-                menuInst.updateTitle("&cПенииииис");
-                s.sendMessage("title changed");
-            }, 30L);
             return true;
         });
     }

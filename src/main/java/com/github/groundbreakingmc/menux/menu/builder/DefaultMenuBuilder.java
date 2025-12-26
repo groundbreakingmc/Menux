@@ -1,18 +1,18 @@
 package com.github.groundbreakingmc.menux.menu.builder;
 
 import com.github.groundbreakingmc.menux.action.MenuAction;
-import com.github.groundbreakingmc.menux.buttons.ButtonHolder;
-import com.github.groundbreakingmc.menux.buttons.ButtonTemplate;
-import com.github.groundbreakingmc.menux.buttons.builder.DefaultButtonBuilder;
-import com.github.groundbreakingmc.menux.buttons.holder.impl.MultipleButtonHolder;
-import com.github.groundbreakingmc.menux.buttons.holder.impl.SimpleButtonHolder;
+import com.github.groundbreakingmc.menux.button.ButtonHolder;
+import com.github.groundbreakingmc.menux.button.ButtonTemplate;
+import com.github.groundbreakingmc.menux.button.builder.DefaultButtonBuilder;
+import com.github.groundbreakingmc.menux.button.holder.impl.MultipleButtonHolder;
+import com.github.groundbreakingmc.menux.button.holder.impl.SimpleButtonHolder;
 import com.github.groundbreakingmc.menux.colorizer.Colorizer;
 import com.github.groundbreakingmc.menux.menu.MenuType;
 import com.github.groundbreakingmc.menux.menu.registry.MenuRegistry;
 import com.github.groundbreakingmc.menux.menu.template.MenuTemplate;
 import com.github.groundbreakingmc.menux.menu.template.impl.DefaultMenuTemplate;
 import com.github.groundbreakingmc.menux.placeholder.PlaceholderParser;
-import com.github.groundbreakingmc.menux.reqirement.rule.MenuRule;
+import com.github.groundbreakingmc.menux.reqirements.rule.MenuRule;
 import com.google.common.collect.ImmutableList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

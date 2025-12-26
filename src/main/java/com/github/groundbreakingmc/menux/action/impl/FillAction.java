@@ -2,14 +2,13 @@ package com.github.groundbreakingmc.menux.action.impl;
 
 import com.github.groundbreakingmc.menux.action.ActionCreationContext;
 import com.github.groundbreakingmc.menux.action.MenuAction;
-import com.github.groundbreakingmc.menux.buttons.ButtonTemplate;
-import com.github.groundbreakingmc.menux.buttons.ClickParams;
+import com.github.groundbreakingmc.menux.button.ButtonTemplate;
+import com.github.groundbreakingmc.menux.button.ClickParams;
 import com.github.groundbreakingmc.menux.click.ClickType;
 import com.github.groundbreakingmc.menux.exception.ActionCreateException;
 import com.github.groundbreakingmc.menux.menu.context.MenuContext;
-import com.github.groundbreakingmc.menux.reqirement.parser.MenuRuleParser;
-import com.github.groundbreakingmc.menux.reqirement.rule.MenuRule;
-import com.github.groundbreakingmc.menux.utils.ClickMap;
+import com.github.groundbreakingmc.menux.reqirements.parser.MenuRuleParser;
+import com.github.groundbreakingmc.menux.reqirements.rule.MenuRule;
 import com.github.retrooper.packetevents.protocol.item.type.ItemType;
 import com.github.retrooper.packetevents.protocol.item.type.ItemTypes;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -248,10 +247,10 @@ public final class FillAction implements MenuAction {
         }
 
         @SuppressWarnings("unchecked")
-        private static ClickMap<ClickParams> parseClickActions(ActionCreationContext context, Map<String, Object> buttonData) throws ActionCreateException {
+        private static Map<ClickType, ClickParams> parseClickActions(ActionCreationContext context, Map<String, Object> buttonData) throws ActionCreateException {
             final Object actionsRaw = buttonData.get("actions");
             if (!(actionsRaw instanceof List<?> actionsList)) {
-                return new ClickMap<>(Map.of());
+                return Map.of();
             }
 
             final Map<ClickType, ClickParams> clickMap = new HashMap<>();
@@ -280,7 +279,7 @@ public final class FillAction implements MenuAction {
                 clickMap.put(clickType, new ClickParams(requirements, executeActions));
             }
 
-            return new ClickMap<>(clickMap);
+            return clickMap;
         }
 
         private static List<MenuRule> parseClickRequirements(ActionCreationContext context, Map<String, Object> actionData) throws ActionCreateException {

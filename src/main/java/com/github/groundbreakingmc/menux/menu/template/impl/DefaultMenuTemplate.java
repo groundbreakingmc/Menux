@@ -1,9 +1,10 @@
 package com.github.groundbreakingmc.menux.menu.template.impl;
 
 import com.github.groundbreakingmc.menux.action.MenuAction;
-import com.github.groundbreakingmc.menux.buttons.ButtonHolder;
-import com.github.groundbreakingmc.menux.buttons.ButtonTemplate;
+import com.github.groundbreakingmc.menux.button.ButtonHolder;
+import com.github.groundbreakingmc.menux.button.ButtonTemplate;
 import com.github.groundbreakingmc.menux.colorizer.Colorizer;
+import com.github.groundbreakingmc.menux.managers.PlayerMenuManager;
 import com.github.groundbreakingmc.menux.menu.MenuType;
 import com.github.groundbreakingmc.menux.menu.builder.DefaultMenuBuilder;
 import com.github.groundbreakingmc.menux.menu.context.MenuContext;
@@ -13,10 +14,11 @@ import com.github.groundbreakingmc.menux.menu.registry.MenuRegistry;
 import com.github.groundbreakingmc.menux.menu.template.MenuTemplate;
 import com.github.groundbreakingmc.menux.placeholder.PlaceholderParser;
 import com.github.groundbreakingmc.menux.platform.player.MenuPlayer;
-import com.github.groundbreakingmc.menux.reqirement.rule.MenuRule;
+import com.github.groundbreakingmc.menux.reqirements.rule.MenuRule;
 import com.github.groundbreakingmc.menux.utils.ContainerIdGenerateUtils;
 import com.google.common.collect.ImmutableList;
 import net.kyori.adventure.text.Component;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -114,7 +116,11 @@ public final class DefaultMenuTemplate implements MenuTemplate {
         return this.placeholderParser;
     }
 
+    /**
+     * Use {@link PlayerMenuManager#open(MenuPlayer, MenuTemplate)} instead
+     */
     @Override
+    @ApiStatus.Internal
     public @NotNull MenuInstance createMenu(@NotNull MenuPlayer player) {
         final int containerId = ContainerIdGenerateUtils.nextId(player);
         return new DefaultMenuInstance(this.menuRegistry, player, this, containerId);
