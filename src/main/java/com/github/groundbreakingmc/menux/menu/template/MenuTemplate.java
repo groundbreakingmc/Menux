@@ -7,7 +7,6 @@ import com.github.groundbreakingmc.menux.colorizer.Colorizer;
 import com.github.groundbreakingmc.menux.menu.MenuType;
 import com.github.groundbreakingmc.menux.menu.builder.DefaultMenuBuilder;
 import com.github.groundbreakingmc.menux.menu.context.MenuContext;
-import com.github.groundbreakingmc.menux.menu.instance.MenuInstance;
 import com.github.groundbreakingmc.menux.menu.registry.MenuRegistry;
 import com.github.groundbreakingmc.menux.placeholder.PlaceholderParser;
 import com.github.groundbreakingmc.menux.platform.player.MenuPlayer;
@@ -37,6 +36,8 @@ public interface MenuTemplate {
 
     @NotNull List<MenuAction> openActions();
 
+    @NotNull List<MenuAction> preCloseActions();
+
     @NotNull List<MenuAction> closeActions();
 
     @Nullable ButtonHolder buttonAt(int slot);
@@ -48,8 +49,6 @@ public interface MenuTemplate {
     @NotNull Colorizer colorizer();
 
     @NotNull PlaceholderParser placeholderParser();
-
-    @NotNull MenuInstance createMenu(@NotNull MenuPlayer player);
 
     static @NotNull DefaultMenuBuilder builder(@NotNull MenuRegistry menuRegistry) {
         return new DefaultMenuBuilder(menuRegistry);

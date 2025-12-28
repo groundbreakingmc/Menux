@@ -29,10 +29,13 @@ dependencies {
 
     // https://github.com/SpongePowered/Configurate
 //    compileOnly("org.spongepowered:configurate-core:4.2.0")
-     compileOnly("org.spongepowered:configurate-yaml:4.2.0") // TODO remove after tests
+    compileOnly("org.spongepowered:configurate-yaml:4.2.0") // TODO remove after tests
 
     // https://github.com/PlaceholderAPI/PlaceholderAPI/wiki/Hook-into-PlaceholderAPI
     compileOnly("me.clip:placeholderapi:2.11.6")
+
+    // https://mvnrepository.com/artifact/io.netty/netty-all
+    implementation("io.netty:netty-all:4.2.9.Final")
 }
 
 java {

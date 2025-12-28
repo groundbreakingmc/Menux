@@ -1,4 +1,4 @@
-package com.github.groundbreakingmc.menux.menu.instance.impl;
+package com.github.groundbreakingmc.menux.menu.processor;
 
 import com.github.groundbreakingmc.menux.MenuxAPI;
 import com.github.groundbreakingmc.menux.action.MenuAction;
@@ -7,18 +7,24 @@ import com.github.groundbreakingmc.menux.button.ButtonTemplate;
 import com.github.groundbreakingmc.menux.click.ClickType;
 import com.github.groundbreakingmc.menux.colorizer.Colorizer;
 import com.github.groundbreakingmc.menux.menu.context.MenuContext;
-import com.github.groundbreakingmc.menux.menu.instance.MenuInstance;
 import com.github.groundbreakingmc.menux.menu.registry.MenuRegistry;
 import com.github.groundbreakingmc.menux.menu.template.MenuTemplate;
 import com.github.groundbreakingmc.menux.placeholder.PlaceholderParser;
 import com.github.groundbreakingmc.menux.platform.player.MenuPlayer;
 import com.github.groundbreakingmc.menux.reqirements.rule.MenuRule;
+import com.github.groundbreakingmc.menux.utils.ContainerIdGenerateUtils;
+import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.netty.channel.ChannelHelper;
 import com.github.retrooper.packetevents.protocol.item.ItemStack;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientClickWindow;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerCloseWindow;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerOpenWindow;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetCursorItem;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetSlot;
+import io.github.retrooper.packetevents.util.protocolsupport.ProtocolSupportUtil;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
@@ -26,8 +32,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public final class DefaultMenuInstance implements MenuInstance {
+public final class MenuProcessor {
 
     private final MenuRegistry menuRegistry;
     private final MenuPlayer player;
@@ -41,14 +49,13 @@ public final class DefaultMenuInstance implements MenuInstance {
     private boolean opened;
     private int stateId;
 
-    public DefaultMenuInstance(MenuRegistry menuRegistry,
-                               MenuPlayer player,
-                               MenuTemplate menuTemplate,
-                               int containerId) {
+    public MenuProcessor(@NotNull MenuRegistry menuRegistry,
+                         @NotNull MenuPlayer player,
+                         @NotNull MenuTemplate menuTemplate) {
         this.menuRegistry = menuRegistry;
         this.player = player;
         this.menuTemplate = menuTemplate;
-        this.containerId = containerId;
+        this.containerId = ContainerIdGenerateUtils.nextId(player);
         this.itemCache = new ItemStack[menuTemplate.size()];
         this.buttons = new ButtonProcessor[menuTemplate.size()];
         this.simpleContext = new MenuContext(player, menuRegistry, this);
@@ -56,7 +63,6 @@ public final class DefaultMenuInstance implements MenuInstance {
         this.metadata = new Object2ObjectOpenHashMap<>(menuTemplate.metadata());
     }
 
-    @Override
     public boolean open() {
         if (this.opened) throw new IllegalStateException("This menu is already opened!");
 
@@ -95,7 +101,6 @@ public final class DefaultMenuInstance implements MenuInstance {
         return shouldOpen;
     }
 
-    @Override
     public void handleClick(@NotNull WrapperPlayClientClickWindow packet) {
         final int clickedSlot = packet.getSlot();
         if (clickedSlot < 0) return; // player clicked outside inventory
@@ -180,16 +185,45 @@ public final class DefaultMenuInstance implements MenuInstance {
         }
     }
 
-    @Override
     public void handleClose() {
-        final List<MenuAction> menuActions = this.menuTemplate.closeActions();
-        if (menuActions.isEmpty()) return;
-        for (final MenuAction action : menuActions) {
-            action.run(this.simpleContext);
-        }
+        CompletableFuture.runAsync(() -> {
+            final List<MenuAction> preCloseActions = this.menuTemplate.preCloseActions();
+            if (preCloseActions.isEmpty()) return;
+            for (final MenuAction action : preCloseActions) {
+                action.run(this.simpleContext);
+            }
+
+            final Channel channel = (Channel) this.player.user().getChannel();
+            channel.eventLoop().execute(() -> {
+                final Object[] transformed = PacketEvents.getAPI().getProtocolManager().transformWrappers(
+                        new WrapperPlayServerCloseWindow(this.containerId),
+                        channel,
+                        true
+                );
+
+                final AtomicInteger counter = new AtomicInteger(transformed.length);
+                for (final Object byteBuf : transformed) {
+                    if (ChannelHelper.isOpen(channel)) {
+                        if (ProtocolSupportUtil.isAvailable() && byteBuf instanceof ByteBuf) {
+                            ((ByteBuf) byteBuf).retain();
+                        }
+                        channel.writeAndFlush(byteBuf).addListener(f -> {
+                            if (counter.decrementAndGet() == 0) {
+                                CompletableFuture.runAsync(() -> {
+                                    final List<MenuAction> closeActions = this.menuTemplate.closeActions();
+                                    if (closeActions.isEmpty()) return;
+                                    for (final MenuAction action : closeActions) {
+                                        action.run(this.simpleContext);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                }
+            });
+        });
     }
 
-    @Override
     public void updateTitle(@NotNull String title) {
         if (!this.opened) throw new IllegalStateException("Can't update title for not opened menu!");
         this.updateTitle(this.colorizer().colorizer(
@@ -197,7 +231,6 @@ public final class DefaultMenuInstance implements MenuInstance {
         ));
     }
 
-    @Override
     public void updateTitle(@NotNull Component title) {
         if (!this.opened) throw new IllegalStateException("Can't update title for not opened menu!");
         final User user = this.player.user();
@@ -214,54 +247,44 @@ public final class DefaultMenuInstance implements MenuInstance {
         }
     }
 
-    @Override
     public void setButton(int slot, @NotNull ButtonTemplate button) {
         this.sendButton(this.simpleContext, button, slot);
     }
 
-    @Override
     public void setMetadata(@NotNull String key, @NotNull Object value) {
         this.metadata.put(key, value);
     }
 
-    @Override
     public <T> T getMetadata(@NotNull String key, @NotNull Class<T> type) {
         final Object value = this.metadata.get(key);
         return type.isInstance(value) ? type.cast(value) : null;
     }
 
-    @Override
     public <T> T getMetadata(@NotNull String key, @NotNull Class<T> type, T defaultValue) {
         final T value = this.getMetadata(key, type);
         return value != null ? value : defaultValue;
     }
 
-    @Override
     public boolean hasMetadata(@NotNull String key) {
         return this.metadata.containsKey(key);
     }
 
-    @Override
     public void removeMetadata(@NotNull String key) {
         this.metadata.remove(key);
     }
 
-    @Override
     public int containerId() {
         return this.containerId;
     }
 
-    @Override
     public @NotNull MenuTemplate template() {
         return this.menuTemplate;
     }
 
-    @Override
     public @NotNull Colorizer colorizer() {
         return this.menuTemplate.colorizer();
     }
 
-    @Override
     public @NotNull PlaceholderParser placeholderParser() {
         return this.menuTemplate.placeholderParser();
     }

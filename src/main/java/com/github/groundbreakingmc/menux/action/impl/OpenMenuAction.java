@@ -1,5 +1,6 @@
 package com.github.groundbreakingmc.menux.action.impl;
 
+import com.github.groundbreakingmc.menux.MenuxAPI;
 import com.github.groundbreakingmc.menux.action.ActionCreationContext;
 import com.github.groundbreakingmc.menux.action.MenuAction;
 import com.github.groundbreakingmc.menux.exception.ActionCreateException;
@@ -25,7 +26,7 @@ public final class OpenMenuAction implements MenuAction {
     public void run(@NotNull MenuContext context) {
         final MenuTemplate menu = context.menuRegistry().menu(this.menuName);
         if (menu != null) {
-            menu.createMenu(context.player()).open();
+            MenuxAPI.menuManager().open(context.player(), menu, context.menuRegistry());
         }
     }
 

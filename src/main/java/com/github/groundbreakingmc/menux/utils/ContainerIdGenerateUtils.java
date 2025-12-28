@@ -4,6 +4,7 @@ import com.github.groundbreakingmc.menux.platform.player.MenuPlayer;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntMaps;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
+import org.jetbrains.annotations.ApiStatus;
 
 public final class ContainerIdGenerateUtils {
 
@@ -32,6 +33,7 @@ public final class ContainerIdGenerateUtils {
      * @return the next container ID within the configured range
      * @since 1.0.0
      */
+    @ApiStatus.Internal
     public static int nextId(MenuPlayer player) {
         final int current = IDS.getOrDefault(player, MIN_ID - 1);
         int next = current + 1;

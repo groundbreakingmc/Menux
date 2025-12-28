@@ -30,6 +30,7 @@ public final class DefaultMenuBuilder {
     private List<MenuAction> preOpenActions = List.of();
     private List<MenuAction> openActions = List.of();
     private List<MenuAction> closeActions = List.of();
+    private List<MenuAction> preCloseActions = List.of();
     private ButtonHolder[] buttons = new ButtonHolder[9];
     private final Map<String, Object> metadata = new Object2ObjectOpenHashMap<>();
     private Colorizer colorizer = null;
@@ -95,6 +96,15 @@ public final class DefaultMenuBuilder {
 
     public DefaultMenuBuilder closeActions(@NotNull List<MenuAction> actions) {
         this.closeActions = ImmutableList.copyOf(actions);
+        return this;
+    }
+
+    public @NotNull List<MenuAction> preCloseActions() {
+        return this.preCloseActions;
+    }
+
+    public DefaultMenuBuilder preCloseActions(@NotNull List<MenuAction> actions) {
+        this.preCloseActions = ImmutableList.copyOf(actions);
         return this;
     }
 

@@ -1,6 +1,7 @@
 package com.github.groundbreakingmc.menux.managers;
 
-import com.github.groundbreakingmc.menux.menu.instance.MenuInstance;
+import com.github.groundbreakingmc.menux.menu.processor.MenuProcessor;
+import com.github.groundbreakingmc.menux.menu.registry.MenuRegistry;
 import com.github.groundbreakingmc.menux.menu.template.MenuTemplate;
 import com.github.groundbreakingmc.menux.platform.player.MenuPlayer;
 import com.github.retrooper.packetevents.protocol.player.User;
@@ -17,13 +18,13 @@ import java.util.UUID;
 
 public final class PlayerMenuManager {
 
-    private final Map<UUID, MenuInstance> openMenus = Reference2ObjectMaps.synchronize(new Reference2ObjectOpenHashMap<>());
+    private final Map<UUID, MenuProcessor> openMenus = Reference2ObjectMaps.synchronize(new Reference2ObjectOpenHashMap<>());
 
-    public void open(@NotNull MenuPlayer player, @NotNull MenuTemplate template) {
+    public void open(@NotNull MenuPlayer player, @NotNull MenuTemplate template, @NotNull MenuRegistry menuRegistry) {
         this.closeExisting(player);
 
-        final MenuInstance instance = template.createMenu(player);
-        final boolean opened = instance.open();
+        final MenuProcessor menu = new MenuProcessor(menuRegistry, player, template);
+        final boolean opened = menu.open();
 
         // MenuInstance сам вызовет registerMenu() если открытие успешно
         if (!opened) {
@@ -36,8 +37,8 @@ public final class PlayerMenuManager {
      * Регистрирует открытое меню. Вызывается из MenuInstance.open()
      * ВАЖНО: Этот метод должен вызываться только из MenuInstance!
      */
-    public void registerMenu(@NotNull MenuPlayer player, @NotNull MenuInstance instance) {
-        this.openMenus.put(player.uuid(), instance);
+    public void registerMenu(@NotNull MenuPlayer player, @NotNull MenuProcessor processor) {
+        this.openMenus.put(player.uuid(), processor);
     }
 
     /**
@@ -48,21 +49,21 @@ public final class PlayerMenuManager {
     }
 
     public void closeAll(@NotNull MenuPlayer player) {
-        final MenuInstance instance = this.openMenus.remove(player.uuid());
-        if (instance != null) {
+        final MenuProcessor processor = this.openMenus.remove(player.uuid());
+        if (processor != null) {
             player.user().sendPacket(
-                    new WrapperPlayServerCloseWindow(instance.containerId())
+                    new WrapperPlayServerCloseWindow(processor.containerId())
             );
         }
     }
 
     @Nullable
-    public MenuInstance openMenu(@NotNull UUID playerId) {
+    public MenuProcessor openMenu(@NotNull UUID playerId) {
         return this.openMenus.get(playerId);
     }
 
     @Nullable
-    public MenuInstance openMenu(@NotNull User user) {
+    public MenuProcessor openMenu(@NotNull User user) {
         return this.openMenu(user.getUUID());
     }
 
@@ -71,45 +72,45 @@ public final class PlayerMenuManager {
     }
 
     public boolean handleClick(@NotNull MenuPlayer player, @NotNull WrapperPlayClientClickWindow packet) {
-        final MenuInstance instance = this.validInstance(player.uuid(), packet.getWindowId());
-        if (instance == null) {
+        final MenuProcessor processor = this.validInstance(player.uuid(), packet.getWindowId());
+        if (processor == null) {
             return false;
         }
 
-        instance.handleClick(packet);
+        processor.handleClick(packet);
         return true;
     }
 
     public boolean handlePlayerClose(@NotNull MenuPlayer player) {
-        final MenuInstance instance = this.openMenus.remove(player.uuid());
-        if (instance == null) {
+        final MenuProcessor processor = this.openMenus.remove(player.uuid());
+        if (processor == null) {
             return false;
         }
 
-        instance.handleClose();
+        processor.handleClose();
         return true;
     }
 
     public boolean handleClose(@NotNull MenuPlayer player, int windowId) {
-        final MenuInstance instance = this.validInstance(player.uuid(), windowId);
-        if (instance == null) {
+        final MenuProcessor processor = this.validInstance(player.uuid(), windowId);
+        if (processor == null) {
             return false;
         }
 
         this.openMenus.remove(player.uuid());
-        instance.handleClose();
+        processor.handleClose();
         return true;
     }
 
     @ApiStatus.Internal
     public void closeAll() {
-        this.openMenus.values().forEach(MenuInstance::handleClose);
+        this.openMenus.values().forEach(MenuProcessor::handleClose);
         this.openMenus.clear();
     }
 
     public void closeAll(MenuTemplate template) {
         this.openMenus.entrySet().removeIf(entry -> {
-            final MenuInstance value = entry.getValue();
+            final MenuProcessor value = entry.getValue();
             if (value.template() == template) {
                 value.handleClose();
                 return true;
@@ -119,16 +120,16 @@ public final class PlayerMenuManager {
     }
 
     @Nullable
-    private MenuInstance validInstance(@NotNull UUID playerId, int expectedContainerId) {
-        final MenuInstance instance = this.openMenus.get(playerId);
-        if (instance == null || instance.containerId() != expectedContainerId) {
+    private MenuProcessor validInstance(@NotNull UUID playerId, int expectedContainerId) {
+        final MenuProcessor processor = this.openMenus.get(playerId);
+        if (processor == null || processor.containerId() != expectedContainerId) {
             return null;
         }
-        return instance;
+        return processor;
     }
 
     private void closeExisting(@NotNull MenuPlayer player) {
-        final MenuInstance existing = this.openMenus.remove(player.uuid());
+        final MenuProcessor existing = this.openMenus.remove(player.uuid());
         if (existing != null) {
             player.user().sendPacketSilently(
                     new WrapperPlayServerCloseWindow(existing.containerId())

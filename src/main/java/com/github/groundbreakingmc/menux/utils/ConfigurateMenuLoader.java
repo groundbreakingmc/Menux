@@ -64,6 +64,7 @@ public final class ConfigurateMenuLoader {
         builder.preOpenActions(parseActions(root.node("pre-open-actions"), creationContext));
         builder.openActions(parseActions(root.node("open-actions"), creationContext));
         builder.closeActions(parseActions(root.node("close-actions"), creationContext));
+        builder.preCloseActions(parseActions(root.node("pre-close-actions"), creationContext));
 
         final ConfigurationNode itemsNode = root.node("items");
         if (itemsNode.virtual()) {

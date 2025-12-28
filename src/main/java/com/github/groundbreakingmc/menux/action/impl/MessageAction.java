@@ -4,7 +4,7 @@ import com.github.groundbreakingmc.menux.action.ActionCreationContext;
 import com.github.groundbreakingmc.menux.action.MenuAction;
 import com.github.groundbreakingmc.menux.exception.ActionCreateException;
 import com.github.groundbreakingmc.menux.menu.context.MenuContext;
-import com.github.groundbreakingmc.menux.menu.instance.MenuInstance;
+import com.github.groundbreakingmc.menux.menu.processor.MenuProcessor;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,10 +24,10 @@ public final class MessageAction implements MenuAction {
 
     @Override
     public void run(@NotNull MenuContext context) {
-        final MenuInstance menuInst = context.menuInst();
+        final MenuProcessor menu = context.menuInst();
         final String message = this.message.replace("{player}", context.player().user().getName());
-        final Component parsed = menuInst.colorizer().colorizer(
-                menuInst.placeholderParser().parse(context.player(), message)
+        final Component parsed = menu.colorizer().colorizer(
+                menu.placeholderParser().parse(context.player(), message)
         );
         context.player().sendMessage(parsed);
     }
