@@ -186,7 +186,7 @@ public final class MenuProcessor {
     }
 
     public void handleClose() {
-        CompletableFuture.runAsync(() -> {
+        CompletableFuture.runAsync(() -> { // ToDO: maybe use own pool?
             final List<MenuAction> preCloseActions = this.menuTemplate.preCloseActions();
             if (preCloseActions.isEmpty()) return;
             for (final MenuAction action : preCloseActions) {
