@@ -19,10 +19,12 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientCl
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerOpenWindow;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetCursorItem;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetSlot;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public final class DefaultMenuInstance implements MenuInstance {
@@ -35,10 +37,14 @@ public final class DefaultMenuInstance implements MenuInstance {
     private final ButtonProcessor[] buttons;
     private final MenuContext simpleContext;
 
+    private final Map<String, Object> metadata;
     private boolean opened;
     private int stateId;
 
-    public DefaultMenuInstance(MenuRegistry menuRegistry, MenuPlayer player, MenuTemplate menuTemplate, int containerId) {
+    public DefaultMenuInstance(MenuRegistry menuRegistry,
+                               MenuPlayer player,
+                               MenuTemplate menuTemplate,
+                               int containerId) {
         this.menuRegistry = menuRegistry;
         this.player = player;
         this.menuTemplate = menuTemplate;
@@ -46,8 +52,11 @@ public final class DefaultMenuInstance implements MenuInstance {
         this.itemCache = new ItemStack[menuTemplate.size()];
         this.buttons = new ButtonProcessor[menuTemplate.size()];
         this.simpleContext = new MenuContext(player, menuRegistry, this);
+
+        this.metadata = new Object2ObjectOpenHashMap<>(menuTemplate.metadata());
     }
 
+    @Override
     public boolean open() {
         if (this.opened) throw new IllegalStateException("This menu is already opened!");
 
@@ -66,6 +75,12 @@ public final class DefaultMenuInstance implements MenuInstance {
         MenuxAPI.menuManager().registerMenu(this.player, this);
 
         if (shouldOpen) {
+            if (!actions.isEmpty()) {
+                for (final MenuAction action : actions) {
+                    action.run(this.simpleContext);
+                }
+            }
+
             this.sendMenu();
         } else {
             MenuxAPI.menuManager().unregisterMenu(this.player.uuid());
@@ -202,6 +217,33 @@ public final class DefaultMenuInstance implements MenuInstance {
     @Override
     public void setButton(int slot, @NotNull ButtonTemplate button) {
         this.sendButton(this.simpleContext, button, slot);
+    }
+
+    @Override
+    public void setMetadata(@NotNull String key, @NotNull Object value) {
+        this.metadata.put(key, value);
+    }
+
+    @Override
+    public <T> T getMetadata(@NotNull String key, @NotNull Class<T> type) {
+        final Object value = this.metadata.get(key);
+        return type.isInstance(value) ? type.cast(value) : null;
+    }
+
+    @Override
+    public <T> T getMetadata(@NotNull String key, @NotNull Class<T> type, T defaultValue) {
+        final T value = this.getMetadata(key, type);
+        return value != null ? value : defaultValue;
+    }
+
+    @Override
+    public boolean hasMetadata(@NotNull String key) {
+        return this.metadata.containsKey(key);
+    }
+
+    @Override
+    public void removeMetadata(@NotNull String key) {
+        this.metadata.remove(key);
     }
 
     @Override

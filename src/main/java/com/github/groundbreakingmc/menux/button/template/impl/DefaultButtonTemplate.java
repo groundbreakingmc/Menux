@@ -8,6 +8,7 @@ import com.github.groundbreakingmc.menux.utils.ItemEnchantments;
 import com.github.retrooper.packetevents.protocol.item.type.ItemType;
 import com.google.common.collect.ImmutableList;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.concurrent.Immutable;
 import java.util.List;
@@ -18,8 +19,8 @@ public record DefaultButtonTemplate(
         int amount,
         int damage,
         int renderPriority,
-        @NotNull String displayName,
-        @NotNull List<String> lore,
+        @Nullable String displayName,
+        @Nullable List<String> lore,
         @NotNull ItemEnchantments enchantments,
         @NotNull List<MenuRule> viewRequirements,
         @NotNull ClickMap<ClickParams> clickActions
@@ -29,8 +30,8 @@ public record DefaultButtonTemplate(
                                  int amount,
                                  int damage,
                                  int renderPriority,
-                                 @NotNull String displayName,
-                                 @NotNull List<String> lore,
+                                 @Nullable String displayName,
+                                 @Nullable List<String> lore,
                                  @NotNull ItemEnchantments enchantments,
                                  @NotNull List<MenuRule> viewRequirements,
                                  @NotNull ClickMap<ClickParams> clickActions) {

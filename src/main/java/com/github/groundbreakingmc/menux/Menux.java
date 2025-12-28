@@ -2,13 +2,19 @@ package com.github.groundbreakingmc.menux;
 
 import com.github.groundbreakingmc.menux.action.registry.MenuActionRegistry;
 import com.github.groundbreakingmc.menux.colorizer.impl.MiniMessageColorizer;
-import com.github.groundbreakingmc.menux.menu.instance.MenuInstance;
 import com.github.groundbreakingmc.menux.menu.registry.impl.DefaultMenuRegistry;
 import com.github.groundbreakingmc.menux.menu.template.MenuTemplate;
 import com.github.groundbreakingmc.menux.placeholder.impl.PAPIParser;
-import com.github.groundbreakingmc.menux.platform.player.MenuPlayer;
 import com.github.groundbreakingmc.menux.reqirements.parser.MenuRuleParserOptions;
 import com.github.groundbreakingmc.menux.utils.ConfigurateMenuLoader;
+import com.github.retrooper.packetevents.protocol.nbt.*;
+import com.github.retrooper.packetevents.protocol.world.blockentity.BlockEntityTypes;
+import com.github.retrooper.packetevents.protocol.world.states.WrappedBlockState;
+import com.github.retrooper.packetevents.protocol.world.states.type.StateTypes;
+import com.github.retrooper.packetevents.util.Vector3i;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBlockChange;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBlockEntityData;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerOpenSignEditor;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.spongepowered.configurate.ConfigurateException;
@@ -46,9 +52,40 @@ public final class Menux extends JavaPlugin {
 
         Objects.requireNonNull(super.getCommand("menux")).setExecutor((s, c, l, a) -> {
             final Object target = a.length < 1 ? s : Bukkit.getPlayer(a[0]);
-            final MenuPlayer player = MenuxAPI.playerFactory().create(target);
-            final MenuInstance menuInst = menu.createMenu(player);
-            menuInst.open();
+//            final MenuPlayer player = MenuxAPI.playerFactory().create(target);
+//            final MenuInstance menuInst = menu.createMenu(player);
+//            menuInst.open();
+            if (target == null) {
+                s.sendMessage("§cPlayer not found!");
+                return true;
+            }
+            final var setSign = new WrapperPlayServerBlockChange(Vector3i.zero(), WrappedBlockState.getDefaultState(StateTypes.OAK_SIGN));
+            final var removeSign = new WrapperPlayServerBlockChange(Vector3i.zero(), WrappedBlockState.getDefaultState(StateTypes.AIR));
+
+            final NBTCompound nbt = new NBTCompound();
+            nbt.setTag("is_waxed", new NBTByte((byte) 0));
+
+            final NBTCompound front = new NBTCompound();
+            front.setTag("color", new NBTString("black"));
+            front.setTag("has_glowing_text", new NBTByte((byte) 0));
+
+            final NBTList<NBTString> frontMessages = new NBTList<>(NBTType.STRING);
+            frontMessages.addTag(new NBTString("{\"Line1\"}"));
+            frontMessages.addTag(new NBTString("{\"Line2\"}"));
+            frontMessages.addTag(new NBTString("{\"Line3\"}"));
+            frontMessages.addTag(new NBTString("{\"Line4\"}"));
+
+            front.setTag("messages", frontMessages);
+            nbt.setTag("front_text", front);
+
+            final var signData = new WrapperPlayServerBlockEntityData(Vector3i.zero(), BlockEntityTypes.SIGN, nbt);
+
+            final var openSign = new WrapperPlayServerOpenSignEditor(Vector3i.zero(), true);
+
+            MenuxAPI.playerFactory().create(target).user().sendPacket(setSign);
+            MenuxAPI.playerFactory().create(target).user().sendPacket(signData);
+            MenuxAPI.playerFactory().create(target).user().sendPacket(openSign);
+            MenuxAPI.playerFactory().create(target).user().sendPacket(removeSign);
             return true;
         });
     }

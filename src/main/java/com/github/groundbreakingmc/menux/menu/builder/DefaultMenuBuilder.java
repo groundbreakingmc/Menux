@@ -14,12 +14,11 @@ import com.github.groundbreakingmc.menux.menu.template.impl.DefaultMenuTemplate;
 import com.github.groundbreakingmc.menux.placeholder.PlaceholderParser;
 import com.github.groundbreakingmc.menux.reqirements.rule.MenuRule;
 import com.google.common.collect.ImmutableList;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 
 public final class DefaultMenuBuilder {
@@ -28,9 +27,11 @@ public final class DefaultMenuBuilder {
     private String title = "";
     private MenuType type = MenuType.GENERIC_9x1;
     private List<MenuRule> openRequirements = List.of();
+    private List<MenuAction> preOpenActions = List.of();
     private List<MenuAction> openActions = List.of();
     private List<MenuAction> closeActions = List.of();
     private ButtonHolder[] buttons = new ButtonHolder[9];
+    private final Map<String, Object> metadata = new Object2ObjectOpenHashMap<>();
     private Colorizer colorizer = null;
     private PlaceholderParser placeholderParser = null;
 
@@ -67,6 +68,15 @@ public final class DefaultMenuBuilder {
 
     public DefaultMenuBuilder openRequirements(@NotNull List<MenuRule> conditions) {
         this.openRequirements = ImmutableList.copyOf(conditions);
+        return this;
+    }
+
+    public @NotNull List<MenuAction> preOpenActions() {
+        return this.preOpenActions;
+    }
+
+    public DefaultMenuBuilder preOpenActions(@NotNull List<MenuAction> preOpenActions) {
+        this.preOpenActions = ImmutableList.copyOf(preOpenActions);
         return this;
     }
 
@@ -135,6 +145,28 @@ public final class DefaultMenuBuilder {
         final SimpleButtonHolder holder = new SimpleButtonHolder(button);
         for (int i = from; i <= to; i++) {
             this.buttons[i] = holder;
+        }
+        return this;
+    }
+
+    public Map<String, Object> metadata() {
+        return Collections.unmodifiableMap(this.metadata);
+    }
+
+    public DefaultMenuBuilder metadata(@NotNull String key, @Nullable Object value) {
+        if (value == null) {
+            this.metadata.remove(key);
+        } else {
+            this.metadata.put(key, value);
+        }
+        return this;
+    }
+
+    public DefaultMenuBuilder metadata(@Nullable Map<String, Object> metadata) {
+        if (metadata == null) {
+            this.metadata.clear();
+        } else {
+            this.metadata.putAll(metadata);
         }
         return this;
     }

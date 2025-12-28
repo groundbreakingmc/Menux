@@ -27,6 +27,16 @@ public interface MenuInstance {
 
     void setButton(int slot, @NotNull ButtonTemplate button);
 
+    void setMetadata(@NotNull String key, @NotNull Object value);
+
+    <T> T getMetadata(@NotNull String key, @NotNull Class<T> type);
+
+    <T> T getMetadata(@NotNull String key, @NotNull Class<T> type, T defaultValue);
+
+    boolean hasMetadata(@NotNull String key);
+
+    void removeMetadata(@NotNull String key);
+
     int containerId();
 
     @NotNull MenuTemplate template();

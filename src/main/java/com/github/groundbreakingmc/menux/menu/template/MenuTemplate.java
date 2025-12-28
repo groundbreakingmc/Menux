@@ -18,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.concurrent.Immutable;
 import java.util.List;
+import java.util.Map;
 
 @Immutable
 public interface MenuTemplate {
@@ -32,6 +33,8 @@ public interface MenuTemplate {
 
     @NotNull List<MenuRule> openRequirements();
 
+    @NotNull List<MenuAction> preOpenActions();
+
     @NotNull List<MenuAction> openActions();
 
     @NotNull List<MenuAction> closeActions();
@@ -39,6 +42,8 @@ public interface MenuTemplate {
     @Nullable ButtonHolder buttonAt(int slot);
 
     @Nullable ButtonTemplate buttonAt(int slot, @Nullable MenuContext context);
+
+    @NotNull Map<String, Object> metadata();
 
     @NotNull Colorizer colorizer();
 

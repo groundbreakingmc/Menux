@@ -11,12 +11,10 @@ import com.github.retrooper.packetevents.protocol.item.enchantment.type.Enchantm
 import com.github.retrooper.packetevents.protocol.item.type.ItemType;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public final class DefaultButtonBuilder {
 
@@ -77,11 +75,26 @@ public final class DefaultButtonBuilder {
     }
 
     public List<String> lore() {
-        return this.lore;
+        return Collections.unmodifiableList(this.lore);
     }
 
     public DefaultButtonBuilder lore(List<String> lore) {
         this.lore = lore;
+        return this;
+    }
+
+    public Object2IntMap<EnchantmentType> enchantments() {
+        return Object2IntMaps.unmodifiable(this.enchantments);
+    }
+
+    public DefaultButtonBuilder enchantments(@NotNull EnchantmentType type, int level) {
+        if (this.enchantments == null) this.enchantments = new Object2IntOpenHashMap<>();
+        this.enchantments.put(type, level);
+        return this;
+    }
+
+    public DefaultButtonBuilder enchantments(Object2IntMap<EnchantmentType> enchantments) {
+        this.enchantments = enchantments;
         return this;
     }
 

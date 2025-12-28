@@ -39,6 +39,18 @@ public final class ConfigurateMenuLoader {
             @NotNull Colorizer colorizer,
             @NotNull PlaceholderParser placeholderParser
     ) throws SerializationException {
+        return load(menuRegistry, actionRegistry, ruleParserOptions, root, colorizer, placeholderParser, Map.of());
+    }
+
+    public static MenuTemplate load(
+            @NotNull MenuRegistry menuRegistry,
+            @NotNull MenuActionRegistry actionRegistry,
+            @NotNull MenuRuleParserOptions ruleParserOptions,
+            @NotNull ConfigurationNode root,
+            @NotNull Colorizer colorizer,
+            @NotNull PlaceholderParser placeholderParser,
+            @NotNull Map<String, Object> metadata
+    ) throws SerializationException {
         final ActionCreationContext creationContext = new ActionCreationContext(actionRegistry, ruleParserOptions);
 
         final DefaultMenuBuilder builder = MenuTemplate.builder(menuRegistry);
@@ -49,6 +61,7 @@ public final class ConfigurateMenuLoader {
         builder.type(parseMenuType(root.node("type")));
 
         builder.openRequirements(parseConditions(root.node("open-requirements"), creationContext));
+        builder.preOpenActions(parseActions(root.node("pre-open-actions"), creationContext));
         builder.openActions(parseActions(root.node("open-actions"), creationContext));
         builder.closeActions(parseActions(root.node("close-actions"), creationContext));
 
@@ -84,7 +97,7 @@ public final class ConfigurateMenuLoader {
             }
         }
 
-        return builder.build();
+        return builder.metadata(metadata).build();
     }
 
     /* -------------------- Button -------------------- */
@@ -167,6 +180,7 @@ public final class ConfigurateMenuLoader {
     }
 
     private static List<MenuAction> parseActions(ConfigurationNode node, ActionCreationContext creationContext) {
+        if (node.virtual()) return List.of();
         final List<MenuAction> actions = new ArrayList<>();
         for (final ConfigurationNode actionNode : node.childrenList()) {
             final String type = requireString(actionNode.node("type"), "Action requires 'type'");

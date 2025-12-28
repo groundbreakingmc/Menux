@@ -11,6 +11,7 @@ import com.github.retrooper.packetevents.protocol.item.ItemStack;
 import com.github.retrooper.packetevents.protocol.item.type.ItemType;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.concurrent.Immutable;
 import java.util.ArrayList;
@@ -27,9 +28,9 @@ public interface ButtonTemplate {
 
     int renderPriority();
 
-    @NotNull String displayName();
+    @Nullable String displayName();
 
-    @NotNull List<String> lore();
+    @Nullable List<String> lore();
 
     default @NotNull ItemEnchantments enchanments() {
         return ItemEnchantments.EMPTY;
@@ -50,14 +51,14 @@ public interface ButtonTemplate {
         }
 
         final String displayName = this.displayName();
-        if (!displayName.isEmpty()) {
+        if (displayName != null && !displayName.isEmpty()) {
             builder.component(ComponentTypes.ITEM_NAME, context.menuInst().colorizer().colorizer(
                     context.menuInst().placeholderParser().parse(context.player(), displayName)
             ));
         }
 
         final List<String> rawLore = this.lore();
-        if (!rawLore.isEmpty()) {
+        if (rawLore != null && !rawLore.isEmpty()) {
             final List<Component> lore = new ArrayList<>();
             for (final String line : rawLore) {
                 lore.add(context.menuInst().colorizer().colorizer(
