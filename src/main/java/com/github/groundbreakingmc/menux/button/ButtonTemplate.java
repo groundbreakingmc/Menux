@@ -4,7 +4,9 @@ import com.github.groundbreakingmc.menux.button.builder.DefaultButtonBuilder;
 import com.github.groundbreakingmc.menux.menu.context.MenuContext;
 import com.github.groundbreakingmc.menux.reqirements.rule.MenuRule;
 import com.github.groundbreakingmc.menux.utils.ClickMap;
+import com.github.retrooper.packetevents.protocol.component.ComponentType;
 import com.github.retrooper.packetevents.protocol.component.ComponentTypes;
+import com.github.retrooper.packetevents.protocol.component.PatchableComponentMap;
 import com.github.retrooper.packetevents.protocol.component.builtin.item.ItemEnchantments;
 import com.github.retrooper.packetevents.protocol.component.builtin.item.ItemLore;
 import com.github.retrooper.packetevents.protocol.item.ItemStack;
@@ -16,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.annotation.concurrent.Immutable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Immutable
 public interface ButtonTemplate {
@@ -34,6 +37,10 @@ public interface ButtonTemplate {
 
     default @NotNull ItemEnchantments enchanments() {
         return ItemEnchantments.EMPTY;
+    }
+
+    default @NotNull Map<ComponentType<?>, Object> customComponents() {
+        return Map.of();
     }
 
     @NotNull List<MenuRule> viewRequirements();
@@ -71,6 +78,11 @@ public interface ButtonTemplate {
         final ItemEnchantments enchanments = this.enchanments();
         if (enchanments != ItemEnchantments.EMPTY) {
             builder.component(ComponentTypes.ENCHANTMENTS, enchanments);
+        }
+
+        final Map<ComponentType<?>, Object> customComponents = this.customComponents();
+        if (!customComponents.isEmpty()) {
+            builder.components(new PatchableComponentMap(customComponents));
         }
 
         return builder.build();

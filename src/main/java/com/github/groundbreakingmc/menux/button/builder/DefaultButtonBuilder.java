@@ -7,12 +7,21 @@ import com.github.groundbreakingmc.menux.click.ClickType;
 import com.github.groundbreakingmc.menux.reqirements.rule.MenuRule;
 import com.github.groundbreakingmc.menux.utils.ClickMap;
 import com.github.groundbreakingmc.menux.utils.ItemEnchantments;
+import com.github.retrooper.packetevents.protocol.component.ComponentType;
+import com.github.retrooper.packetevents.protocol.component.ComponentTypes;
+import com.github.retrooper.packetevents.protocol.component.builtin.item.ItemDyeColor;
+import com.github.retrooper.packetevents.protocol.component.builtin.item.ItemPotionContents;
+import com.github.retrooper.packetevents.protocol.component.builtin.item.ItemProfile;
 import com.github.retrooper.packetevents.protocol.item.enchantment.type.EnchantmentType;
 import com.github.retrooper.packetevents.protocol.item.type.ItemType;
+import com.github.retrooper.packetevents.protocol.potion.Potion;
+import com.github.retrooper.packetevents.protocol.potion.PotionEffect;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -25,6 +34,7 @@ public final class DefaultButtonBuilder {
     private String displayName;
     private List<String> lore;
     private Object2IntMap<EnchantmentType> enchantments;
+    private Map<ComponentType<?>, Object> customComponents;
     private List<MenuRule> viewRequirements;
     private Map<ClickType, ClickParams> clickActions;
 
@@ -98,6 +108,54 @@ public final class DefaultButtonBuilder {
         return this;
     }
 
+    public Map<ComponentType<?>, Object> customComponents() {
+        return Collections.unmodifiableMap(this.customComponents);
+    }
+
+    public DefaultButtonBuilder armorColor(int rgb) {
+        return customComponent(ComponentTypes.DYED_COLOR,
+                new ItemDyeColor(rgb, true));
+    }
+
+    public DefaultButtonBuilder potionColor(@Nullable Potion potion,
+                                            @Nullable Integer customColor,
+                                            List<PotionEffect> customEffects,
+                                            @Nullable String customName) {
+        return customComponent(ComponentTypes.POTION_CONTENTS,
+                new ItemPotionContents(potion, customColor, customEffects, customName));
+    }
+
+    public DefaultButtonBuilder customModelData(int data) {
+        return customComponent(ComponentTypes.CUSTOM_MODEL_DATA, data);
+    }
+
+    public DefaultButtonBuilder skullOwner(@Nullable String name,
+                                           @Nullable UUID id,
+                                           List<ItemProfile.Property> properties,
+                                           @Nullable ItemProfile.SkinPatch skinPatch) {
+        return customComponent(ComponentTypes.PROFILE,
+                new ItemProfile(name, id, properties, skinPatch != null ? skinPatch : ItemProfile.SkinPatch.EMPTY));
+    }
+
+    public <T> DefaultButtonBuilder customComponent(ComponentType<T> type, T value) {
+        if (this.customComponents == null) {
+            this.customComponents = new Object2ObjectOpenHashMap<>();
+        }
+        this.customComponents.put(type, value);
+        return this;
+    }
+
+    public <T> DefaultButtonBuilder customComponent(@Nullable Map<ComponentType<?>, Object> customComponents) {
+        if (customComponents == null) {
+            this.customComponents = Map.of();
+        } else {
+            if (this.customComponents == null) this.customComponents = new Object2ObjectOpenHashMap<>();
+            this.customComponents.clear();
+            this.customComponents.putAll(customComponents);
+        }
+        return this;
+    }
+
     public List<MenuRule> viewRequirements() {
         return this.viewRequirements;
     }
@@ -138,6 +196,7 @@ public final class DefaultButtonBuilder {
                 this.displayName,
                 this.lore,
                 new ItemEnchantments(this.enchantments),
+                customComponents,
                 this.viewRequirements,
                 new ClickMap<>(this.clickActions)
         );
