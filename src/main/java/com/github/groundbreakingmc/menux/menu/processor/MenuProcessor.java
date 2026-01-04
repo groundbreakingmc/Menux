@@ -65,8 +65,9 @@ public final class MenuProcessor {
 
     public boolean open() {
         if (this.opened) throw new IllegalStateException("This menu is already opened!");
+        MenuxAPI.menuManager().registerMenu(this.player, this);
 
-        List<MenuAction> actions = this.menuTemplate.openActions();
+        List<MenuAction> actions = this.menuTemplate.preOpenActions();
         boolean shouldOpen = true;
 
         final List<MenuRule> openRequirements = this.menuTemplate.openRequirements();
@@ -78,24 +79,17 @@ public final class MenuProcessor {
             }
         }
 
-        MenuxAPI.menuManager().registerMenu(this.player, this);
-
-        if (shouldOpen) {
-            if (!actions.isEmpty()) {
-                for (final MenuAction action : actions) {
-                    action.run(this.simpleContext);
-                }
-            }
-
-            this.sendMenu();
-        } else {
-            MenuxAPI.menuManager().unregisterMenu(this.player.uuid());
+        for (final MenuAction action : actions) {
+            action.run(this.simpleContext);
         }
 
-        if (!actions.isEmpty()) {
-            for (final MenuAction action : actions) {
+        if (shouldOpen) {
+            this.sendMenu();
+            for (final MenuAction action : this.menuTemplate.openActions()) {
                 action.run(this.simpleContext);
             }
+        } else {
+            MenuxAPI.menuManager().unregisterMenu(this.player.uuid());
         }
 
         return shouldOpen;
@@ -125,7 +119,7 @@ public final class MenuProcessor {
         }
 
         switch (clickType) {
-            case LEFT_CLICK, RIGHT_CLICK, DOUBLE_CLICK -> {
+            case LEFT_CLICK, RIGHT_CLICK -> {
                 if (clickedInMenu) {
                     if (clicked != null) {
                         this.sendCursor(ItemStack.EMPTY);
@@ -141,7 +135,7 @@ public final class MenuProcessor {
                 final int actionBarSlot = topSize + 27 + packet.getButton();
                 if (actionBarSlot != clickedSlot) { // if it is true, then nothing changed
                     final ItemStack item = this.player.itemAt(packet.getButton());
-                    this.sendSlot(0, actionBarSlot, item);
+                    this.sendSlot(0, 36 + packet.getButton(), item);
                     if (clickedSlot >= topSize) { // clicked in own inventory
                         final int playerSlot = clickedSlot - topSize;
                         final ItemStack itemInClickedSlot = this.player.itemAt(playerSlot < 27 ? playerSlot + 9 : playerSlot - 27);
@@ -160,7 +154,7 @@ public final class MenuProcessor {
                     this.resendEffectedSlot(clickedSlot - topSize);
                 }
             }
-            case SHIFT_LEFT, SHIFT_RIGHT, QUICK_CRAFT -> {
+            case SHIFT_LEFT, SHIFT_RIGHT, DOUBLE_CLICK, QUICK_CRAFT -> {
                 final Set<Integer> effectedSlots = packet.getSlots().isPresent()
                         ? packet.getSlots().get().keySet()
                         : packet.getHashedSlots() != null ? packet.getHashedSlots().keySet() : null;
@@ -188,7 +182,6 @@ public final class MenuProcessor {
     public void handleClose() {
         CompletableFuture.runAsync(() -> { // ToDO: maybe use own pool?
             final List<MenuAction> preCloseActions = this.menuTemplate.preCloseActions();
-            if (preCloseActions.isEmpty()) return;
             for (final MenuAction action : preCloseActions) {
                 action.run(this.simpleContext);
             }
@@ -211,7 +204,6 @@ public final class MenuProcessor {
                             if (counter.decrementAndGet() == 0) {
                                 CompletableFuture.runAsync(() -> {
                                     final List<MenuAction> closeActions = this.menuTemplate.closeActions();
-                                    if (closeActions.isEmpty()) return;
                                     for (final MenuAction action : closeActions) {
                                         action.run(this.simpleContext);
                                     }

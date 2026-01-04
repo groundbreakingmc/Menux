@@ -63,8 +63,8 @@ public final class ConfigurateMenuLoader {
         builder.openRequirements(parseConditions(root.node("open-requirements"), creationContext));
         builder.preOpenActions(parseActions(root.node("pre-open-actions"), creationContext));
         builder.openActions(parseActions(root.node("open-actions"), creationContext));
-        builder.closeActions(parseActions(root.node("close-actions"), creationContext));
         builder.preCloseActions(parseActions(root.node("pre-close-actions"), creationContext));
+        builder.closeActions(parseActions(root.node("close-actions"), creationContext));
 
         final ConfigurationNode itemsNode = root.node("items");
         if (itemsNode.virtual()) {
@@ -148,6 +148,7 @@ public final class ConfigurateMenuLoader {
     }
 
     private static List<MenuRule> parseConditions(ConfigurationNode node, ActionCreationContext creationContext) {
+        if (node.virtual()) return List.of();
         final List<MenuRule> rules = new ArrayList<>();
         for (final ConfigurationNode condition : node.childrenList()) {
             final String expr = requireString(condition.node("expression"), "Condition requires 'expression'");

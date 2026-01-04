@@ -2,6 +2,8 @@ package com.github.groundbreakingmc.menux.menu.registry.impl;
 
 import com.github.groundbreakingmc.menux.menu.registry.MenuRegistry;
 import com.github.groundbreakingmc.menux.menu.template.MenuTemplate;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.jetbrains.annotations.NotNull;
 
@@ -9,7 +11,7 @@ import java.util.Map;
 
 public final class DefaultMenuRegistry implements MenuRegistry {
 
-    private final Map<String, MenuTemplate> menus;
+    private final Object2ObjectMap<String, MenuTemplate> menus;
 
     public DefaultMenuRegistry() {
         this.menus = new Object2ObjectOpenHashMap<>();
@@ -35,5 +37,10 @@ public final class DefaultMenuRegistry implements MenuRegistry {
     @Override
     public MenuTemplate menu(@NotNull String name) {
         return this.menus.get(name);
+    }
+
+    @Override
+    public @NotNull Map<String, MenuTemplate> registered() {
+        return Object2ObjectMaps.unmodifiable(this.menus);
     }
 }

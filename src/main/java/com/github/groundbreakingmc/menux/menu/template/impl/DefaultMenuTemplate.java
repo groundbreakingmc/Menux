@@ -31,8 +31,8 @@ public final class DefaultMenuTemplate implements MenuTemplate {
     private final List<MenuRule> openRequirements;
     private final List<MenuAction> preOpenActions;
     private final List<MenuAction> openActions;
-    private final List<MenuAction> closeActions;
     private final List<MenuAction> preCloseActions;
+    private final List<MenuAction> closeActions;
     private final ButtonHolder[] buttons;
     private final Map<String, Object> metadata;
     private final Colorizer colorizer;
@@ -44,8 +44,8 @@ public final class DefaultMenuTemplate implements MenuTemplate {
         this.openRequirements = ImmutableList.copyOf(builder.openRequirements());
         this.preOpenActions = ImmutableList.copyOf(builder.preOpenActions());
         this.openActions = ImmutableList.copyOf(builder.openActions());
-        this.closeActions = ImmutableList.copyOf(builder.closeActions());
         this.preCloseActions = ImmutableList.copyOf(builder.preCloseActions());
+        this.closeActions = ImmutableList.copyOf(builder.closeActions());
         this.buttons = Arrays.copyOf(Objects.requireNonNull(builder.buttons()), builder.type().size());
         if (this.buttons.length != this.type.size()) {
             throw new IllegalStateException("Buttons amount is not equals to menu size (Buttons: '" + this.buttons.length
@@ -96,13 +96,13 @@ public final class DefaultMenuTemplate implements MenuTemplate {
     }
 
     @Override
-    public @NotNull List<MenuAction> closeActions() {
-        return this.closeActions;
+    public @NotNull List<MenuAction> preCloseActions() {
+        return this.preCloseActions;
     }
 
     @Override
-    public @NotNull List<MenuAction> preCloseActions() {
-        return this.preCloseActions;
+    public @NotNull List<MenuAction> closeActions() {
+        return this.closeActions;
     }
 
     @Override

@@ -3,8 +3,10 @@ package com.github.groundbreakingmc.menux.utils;
 import com.github.groundbreakingmc.menux.click.ClickType;
 import com.google.common.collect.ImmutableMap;
 
+import javax.annotation.concurrent.Immutable;
 import java.util.Map;
 
+@Immutable
 public final class ClickMap<V> {
 
     private final Map<ClickType, V> map;

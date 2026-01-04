@@ -5,7 +5,7 @@ import com.github.groundbreakingmc.menux.button.ButtonHolder;
 import com.github.groundbreakingmc.menux.button.ButtonTemplate;
 import com.github.groundbreakingmc.menux.button.builder.DefaultButtonBuilder;
 import com.github.groundbreakingmc.menux.button.holder.impl.MultipleButtonHolder;
-import com.github.groundbreakingmc.menux.button.holder.impl.SimpleButtonHolder;
+import com.github.groundbreakingmc.menux.button.holder.impl.SingleButtonHolder;
 import com.github.groundbreakingmc.menux.colorizer.Colorizer;
 import com.github.groundbreakingmc.menux.menu.MenuType;
 import com.github.groundbreakingmc.menux.menu.registry.MenuRegistry;
@@ -29,8 +29,8 @@ public final class DefaultMenuBuilder {
     private List<MenuRule> openRequirements = List.of();
     private List<MenuAction> preOpenActions = List.of();
     private List<MenuAction> openActions = List.of();
-    private List<MenuAction> closeActions = List.of();
     private List<MenuAction> preCloseActions = List.of();
+    private List<MenuAction> closeActions = List.of();
     private ButtonHolder[] buttons = new ButtonHolder[9];
     private final Map<String, Object> metadata = new Object2ObjectOpenHashMap<>();
     private Colorizer colorizer = null;
@@ -90,21 +90,21 @@ public final class DefaultMenuBuilder {
         return this;
     }
 
-    public @NotNull List<MenuAction> closeActions() {
-        return this.closeActions;
-    }
-
-    public DefaultMenuBuilder closeActions(@NotNull List<MenuAction> actions) {
-        this.closeActions = ImmutableList.copyOf(actions);
-        return this;
-    }
-
     public @NotNull List<MenuAction> preCloseActions() {
         return this.preCloseActions;
     }
 
     public DefaultMenuBuilder preCloseActions(@NotNull List<MenuAction> actions) {
         this.preCloseActions = ImmutableList.copyOf(actions);
+        return this;
+    }
+
+    public @NotNull List<MenuAction> closeActions() {
+        return this.closeActions;
+    }
+
+    public DefaultMenuBuilder closeActions(@NotNull List<MenuAction> actions) {
+        this.closeActions = ImmutableList.copyOf(actions);
         return this;
     }
 
@@ -116,13 +116,32 @@ public final class DefaultMenuBuilder {
         if (buttons != null) {
             this.buttons = Arrays.copyOf(buttons, buttons.length);
         } else {
-            this.buttons = new ButtonHolder[54];
+            this.buttons = new ButtonHolder[this.type != null ? this.type.size() : 54];
         }
         return this;
     }
 
-    public DefaultMenuBuilder button(int slot, @NotNull ButtonTemplate button) {
-        this.buttons[slot] = new SimpleButtonHolder(button);
+    public DefaultMenuBuilder button(int slot, @Nullable ButtonTemplate button) {
+        if (slot < 0 || slot >= this.buttons.length) {
+            throw new IllegalArgumentException(
+                    "Slot " + slot + " is out of bounds! Valid range: 0-" + (this.buttons.length - 1)
+            );
+        }
+
+        if (button == null) {
+            this.buttons[slot] = null;
+            return this;
+        }
+
+        final ButtonHolder old = this.buttons[slot];
+        final List<ButtonTemplate> all;
+        if (old == null || (all = old.all()).isEmpty()) {
+            this.buttons[slot] = new SingleButtonHolder(button);
+        } else {
+            final List<ButtonTemplate> list = new ArrayList<>(all);
+            list.add(button);
+            this.buttons[slot] = new MultipleButtonHolder(list);
+        }
         return this;
     }
 
@@ -132,29 +151,30 @@ public final class DefaultMenuBuilder {
         return this.button(slot, buttonBuilder.build());
     }
 
-    public DefaultMenuBuilder stackButton(int slot, @NotNull ButtonTemplate button) {
-        final ButtonHolder old = this.buttons[slot];
-        final List<ButtonTemplate> all = old.all();
-        if (all.isEmpty()) {
-            this.buttons[slot] = new SimpleButtonHolder(button);
-        } else {
-            final List<ButtonTemplate> list = new ArrayList<>(all);
-            list.add(button);
-            this.buttons[slot] = new MultipleButtonHolder(list);
-        }
-        return this;
-    }
-
-    public DefaultMenuBuilder stackButton(int slot, @NotNull Consumer<DefaultButtonBuilder> buttonFactory) {
-        final DefaultButtonBuilder buttonBuilder = new DefaultButtonBuilder();
-        buttonFactory.accept(buttonBuilder);
-        return this.stackButton(slot, buttonBuilder.build());
-    }
-
     public DefaultMenuBuilder fillRange(int from, int to, @NotNull ButtonTemplate button) {
-        final SimpleButtonHolder holder = new SimpleButtonHolder(button);
+        if (from < 0) {
+            throw new IllegalArgumentException("Fill range start cannot be less than 0 (from=" + from + ")!");
+        }
+        if (to >= this.buttons.length) {
+            throw new IllegalArgumentException(
+                    "Fill range end cannot be greater than menu size (to=" + to + ", size=" + this.buttons.length + ")!"
+            );
+        }
+        if (from > to) {
+            throw new IllegalArgumentException("Fill range start cannot be greater than end (from=" + from + ", to=" + to + ")!");
+        }
+
+        final SingleButtonHolder holder = new SingleButtonHolder(button);
         for (int i = from; i <= to; i++) {
-            this.buttons[i] = holder;
+            final ButtonHolder old = this.buttons[i];
+            final List<ButtonTemplate> all;
+            if (old == null || (all = old.all()).isEmpty()) {
+                this.buttons[i] = holder;
+            } else {
+                final List<ButtonTemplate> list = new ArrayList<>(all);
+                list.add(button);
+                this.buttons[i] = new MultipleButtonHolder(list);
+            }
         }
         return this;
     }
@@ -201,18 +221,5 @@ public final class DefaultMenuBuilder {
 
     public @NotNull MenuTemplate build() {
         return new DefaultMenuTemplate(this);
-    }
-
-    // ===== HELPER METHODS =====
-
-    private void stackButton(ButtonTemplate newButton, List<ButtonTemplate> buttons) {
-        for (int i = 0; i < buttons.size(); i++) {
-            final ButtonTemplate button = buttons.get(i);
-            if (button.renderPriority() < newButton.renderPriority()) {
-                buttons.add(i, button);
-                return;
-            }
-        }
-        buttons.add(newButton);
     }
 }

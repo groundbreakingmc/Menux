@@ -21,9 +21,14 @@ public final class PlayerMenuManager {
     private final Map<UUID, MenuProcessor> openMenus = Reference2ObjectMaps.synchronize(new Reference2ObjectOpenHashMap<>());
 
     public void open(@NotNull MenuPlayer player, @NotNull MenuTemplate template, @NotNull MenuRegistry menuRegistry) {
+        this.open(player, template, menuRegistry, Map.of());
+    }
+
+    public void open(@NotNull MenuPlayer player, @NotNull MenuTemplate template, @NotNull MenuRegistry menuRegistry, @NotNull Map<String, Object> metadata) {
         this.closeExisting(player);
 
         final MenuProcessor menu = new MenuProcessor(menuRegistry, player, template);
+        metadata.forEach(menu::setMetadata);
         final boolean opened = menu.open();
 
         // MenuInstance сам вызовет registerMenu() если открытие успешно

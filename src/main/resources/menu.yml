@@ -23,7 +23,7 @@ items:
 #    render-priority: 1
     slot: 4
     display-name: "<yellow>Click to buy this diamond"
-#    lore: [ ]
+    lore: [ "<b>1" ]
 #    view-requirements: "hasPermission('shop.see.diamond')"
 #    actions:
 #      - type: left_click

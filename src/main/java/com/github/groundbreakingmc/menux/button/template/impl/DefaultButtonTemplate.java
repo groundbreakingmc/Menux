@@ -30,7 +30,6 @@ public record DefaultButtonTemplate(
         @NotNull ClickMap<ClickParams> clickActions
 ) implements ButtonTemplate {
 
-
     public DefaultButtonTemplate(@NotNull ItemType material,
                                  int amount,
                                  int damage,
@@ -41,7 +40,7 @@ public record DefaultButtonTemplate(
                                  @NotNull Map<ComponentType<?>, Object> customComponents,
                                  @NotNull List<MenuRule> viewRequirements,
                                  @NotNull ClickMap<ClickParams> clickActions) {
-        if (damage < 0) throw new IllegalArgumentException("Damage can not be less than 0!");
+        if (damage < 0) throw new IllegalArgumentException("Damage can't be negative! (damage=" + damage + ")");
         this.material = material;
         this.amount = amount;
         this.damage = damage;

@@ -6,16 +6,23 @@ import com.github.groundbreakingmc.menux.menu.context.MenuContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public final class SimpleButtonHolder implements ButtonHolder {
+import java.util.List;
+
+public final class SingleButtonHolder implements ButtonHolder {
 
     private final ButtonTemplate template;
 
-    public SimpleButtonHolder(@NotNull ButtonTemplate template) {
+    public SingleButtonHolder(@NotNull ButtonTemplate template) {
         this.template = template;
     }
 
     @Override
     public @NotNull ButtonTemplate button(@Nullable MenuContext context) {
         return this.template;
+    }
+
+    @Override
+    public @NotNull List<ButtonTemplate> all() {
+        return List.of(this.template);
     }
 }

@@ -21,12 +21,12 @@ public final class MenuActionRegistry {
      * Registers all default built-in actions.
      */
     public void registerDefaultActions() {
-        this.register("close", new CloseMenuAction.Factory())
-                .register("command", new CommandMenuAction.Factory())
-                .register("fill", new FillAction.Factory())
-                .register("message", new MessageAction.Factory())
-                .register("open", new OpenMenuAction.Factory())
-                .register("sound", new PlaySoundAction.Factory());
+        this.register("close-menu", new CloseMenuAction.Factory())
+                .register("run-command", new CommandMenuAction.Factory())
+                .register("fill-menu", new FillAction.Factory())
+                .register("send-message", new MessageAction.Factory())
+                .register("open-menu", new OpenMenuAction.Factory())
+                .register("play-sound", new PlaySoundAction.Factory());
     }
 
     /**
